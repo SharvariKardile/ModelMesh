@@ -1,62 +1,47 @@
-# ModelMesh
+# ModelMesh — Intelligent Multi-Model AI Gateway
 
-## Intelligent Multi-Model AI Gateway
+ModelMesh is an intelligent AI gateway that analyzes incoming user queries and dynamically selects an appropriate AI model based on query complexity, model quality, latency, cost, and health.
 
-ModelMesh is an intelligent AI gateway that dynamically selects the most suitable AI/ML model for each user request based on factors such as query complexity, response quality, latency, cost, and model health.
+The project demonstrates concepts from Software Engineering, Machine Learning, MLOps, and Cloud Computing.
 
-## Problem
+## Current Features
 
-Modern AI applications may use multiple AI models with different capabilities, costs, response times, and reliability.
+- FastAPI-based AI gateway
+- Query complexity analysis
+- Model registry
+- Intelligent model routing
+- Quality-based model filtering
+- Health-aware routing
+- Simulated model failure and automatic failover
+- Real Gemini API integration
+- Secure API-key management using environment variables
 
-Using the most powerful model for every request can increase cost and latency, while using a cheaper model for every request may reduce response quality.
+## Architecture
 
-ModelMesh aims to solve this problem through intelligent model routing.
-
-## Initial Architecture
-
-User Request
-↓
-ModelMesh API
-↓
+```text
+User
+  |
+  v
+FastAPI Gateway
+  |
+  v
 Query Analyzer
-↓
-Routing Engine
-↓
-Model A / Model B / Model C
-↓
-Response
-
-## Planned Features
-
-- Intelligent query complexity analysis
-- Multi-model routing
-- Cost-aware model selection
-- Latency-aware routing
-- Model quality monitoring
-- Model health scoring
-- Automatic fallback
-- Model performance monitoring
-- Champion/Challenger evaluation
-- Shadow traffic
-- MLOps monitoring
-- Prometheus and Grafana
-- MLflow
-- Docker
-- AWS deployment
-- CI/CD
-
-## Technology Stack
-
-- Python
-- FastAPI
-- Redis
-- Docker
-- MLflow
-- Prometheus
-- Grafana
-- AWS
-- GitHub Actions
-
-## Project Status
-
-Currently under development.
+  |
+  v
+Intelligent Router
+  |
+  +----------------------+
+  |                      |
+  v                      v
+Model Health        Model Registry
+  |                      |
+  +----------+-----------+
+             |
+             v
+       Selected Model
+             |
+             v
+         Gemini API
+             |
+             v
+        AI Response
