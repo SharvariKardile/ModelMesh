@@ -5,6 +5,14 @@ from app.analyzer import analyze_query
 from app.router import rank_models
 from app.model_client import generate_response
 
+from app.metrics import (
+    start_timer,
+    record_model_attempt,
+    record_success,
+    record_failure,
+    get_metrics
+)
+
 
 # --------------------------------------------------
 # Create FastAPI application
@@ -40,6 +48,9 @@ def home():
 @app.post("/generate")
 def generate(request: QueryRequest):
 
+    # Start request timer
+    start_time = start_timer()
+
     # --------------------------------------------------
     # Step 1: Analyze the query
     # --------------------------------------------------
@@ -62,14 +73,25 @@ def generate(request: QueryRequest):
 
     attempts = []
 
-    for model in ranked_models:
+    for index, model in enumerate(ranked_models):
 
+        # Every attempt after the first one
+        # is considered a fallback attempt
+        is_fallback = index > 0
+
+        # Record model attempt
+        record_model_attempt(
+            model["name"],
+            is_fallback=is_fallback
+        )
+
+        # Call the selected model
         result = generate_response(
             model,
             request.query
         )
 
-        # Record every model attempt
+        # Store attempt information
         attempts.append({
             "model": model["name"],
             "status": result["status"],
@@ -77,10 +99,12 @@ def generate(request: QueryRequest):
         })
 
         # --------------------------------------------------
-        # If model succeeds, return its response
+        # If model succeeds
         # --------------------------------------------------
 
         if result["status"] == "success":
+
+            record_success(start_time)
 
             return {
                 "query": request.query,
@@ -95,6 +119,8 @@ def generate(request: QueryRequest):
     # Step 4: All models failed
     # --------------------------------------------------
 
+    record_failure(start_time)
+
     return {
         "query": request.query,
         "analysis": analysis,
@@ -103,3 +129,13 @@ def generate(request: QueryRequest):
         "attempts": attempts,
         "status": "all_models_failed"
     }
+
+
+# --------------------------------------------------
+# Metrics endpoint
+# --------------------------------------------------
+
+@app.get("/metrics")
+def metrics():
+
+    return get_metrics()
