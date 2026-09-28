@@ -1,34 +1,28 @@
-from dotenv import load_dotenv
-from google import genai
-import os
+from app.providers.gemini_provider import GeminiProvider
 
 
-# Load environment variables from .env
-load_dotenv()
-
-
-# Create Gemini client
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+# Create the Gemini provider
+gemini_provider = GeminiProvider()
 
 
 def generate_response(model, query):
     """
-    Generate a response using the selected AI model.
-    Handles API errors gracefully.
+    Generate a response using the provider layer.
+
+    The selected ModelMesh model contains information
+    about which provider and provider model should be used.
     """
 
     try:
 
-        interaction = client.interactions.create(
-            model="gemini-3.8-flash",
-            input=query
+        response = gemini_provider.generate(
+            query=query,
+            provider_model=model["provider_model"]
         )
 
         return {
             "model": model["name"],
-            "response": interaction.output_text,
+            "response": response,
             "status": "success"
         }
 
