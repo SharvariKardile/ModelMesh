@@ -13,6 +13,8 @@ from app.metrics import (
     get_metrics
 )
 
+from app.health import get_model_health
+
 
 # --------------------------------------------------
 # Create FastAPI application
@@ -38,6 +40,40 @@ def home():
 
     return {
         "message": "ModelMesh is running!"
+    }
+
+
+# --------------------------------------------------
+# Health endpoint
+# --------------------------------------------------
+
+@app.get("/health")
+def health():
+
+    health_status = get_model_health()
+
+    healthy_count = sum(
+        1
+        for model in health_status.values()
+        if model["healthy"]
+    )
+
+    total_models = len(health_status)
+
+    if healthy_count == total_models:
+        gateway_status = "healthy"
+
+    elif healthy_count > 0:
+        gateway_status = "degraded"
+
+    else:
+        gateway_status = "unhealthy"
+
+    return {
+        "gateway_status": gateway_status,
+        "healthy_models": healthy_count,
+        "total_models": total_models,
+        "models": health_status
     }
 
 
